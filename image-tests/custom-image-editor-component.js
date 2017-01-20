@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import BlockEditor from '../block-editor/component';
-import method from 'ember-service-methods/inject-method';
 import Util from 'email-builder/system/util';
 import Changeset from 'ember-changeset';
 
@@ -8,20 +7,13 @@ const { get, set } = Ember;
 
 export default BlockEditor.extend({
   typeKey: 'custom-image',
-  s3Direct: method(),
 
   vAlignments: ["top","middle","bottom","baseline"],
   alignments: ["left","right","center","justify"],
 
   actions: {
     addCustomImage(block, file) {
-      return this.s3Direct().then(({ url, credentials }) => {
-        return file.upload(url, {
-          data: credentials
-        });
-      }).then((response) => {
-        return Util.loadImage(response.headers.Location);
-      }).then((image) => {
+      Util.storeAndLoadImage(file).then((image) => {
         let { src, width, height } = image;
         block.setProperties({ typeKey: get(this, "typeKey"),
                               src,

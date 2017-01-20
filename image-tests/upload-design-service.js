@@ -17,7 +17,7 @@ export default Ember.Service.extend({
     let email = get(design, 'email');
     let campaignPic = get(email, 'campaignPic');
 
-    return this.loadImage(file).then((image)=> {
+    return Util.storeAndLoadImage(file).then((image)=> {
       let { src, width, height } = image;
       let block = Block.create({
         parent: design,
@@ -47,16 +47,6 @@ export default Ember.Service.extend({
       set(email, 'emailTemplate', template);
 
       return template.save();
-    });
-  },
-
-  loadImage(file) {
-    return this.s3Direct().then(({ url, credentials })=> {
-      return file.upload(url, {
-        data: credentials
-      });
-    }).then((response)=> {
-      return Util.loadImage(response.headers.Location);
     });
   },
 
