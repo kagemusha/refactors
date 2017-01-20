@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import BlockEditor from '../block-editor/component';
 import method from 'ember-service-methods/inject-method';
-import loadImage from 'email-builder/system/image-loader';
+import Util from 'email-builder/system/util';
 import Changeset from 'ember-changeset';
 
 const { get, set } = Ember;
@@ -20,7 +20,7 @@ export default BlockEditor.extend({
           data: credentials
         });
       }).then((response) => {
-        return loadImage(response.headers.Location);
+        return Util.loadImage(response.headers.Location);
       }).then((image) => {
         let { src, width, height } = image;
         block.setProperties({ typeKey: get(this, "typeKey"),

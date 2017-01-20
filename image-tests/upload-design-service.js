@@ -56,7 +56,7 @@ export default Ember.Service.extend({
         data: credentials
       });
     }).then((response)=> {
-      return loadImage(response.headers.Location);
+      return Util.loadImage(response.headers.Location);
     });
   },
 
