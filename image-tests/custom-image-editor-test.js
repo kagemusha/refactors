@@ -1,42 +1,36 @@
-/* globals Image */
-import Ember from 'ember';
-import moduleForAcceptance from '../helpers/module-for-acceptance';
-import File from 'ember-file-upload/file';
-import { wait } from 'fluid/helpers/wait';
-import { test, skip } from 'ember-qunit';
-
-const defaultCampaignUrl = '/campaigns/1/designs/desktop';
-
-const fakeLoadImage = function(){
-      const image = new Image(100, 100);
-      image.src = "/cat.png";
-      return Ember.RSVP.Promise.resolve(image);
-    };
+import page from '../pages/design-editor';
+import Util from 'email-builder/system/util';
+import { fileEvent, fakeStoreAndLoadImage } from './acceptance-helpers';
 
 moduleForAcceptance('Acceptance - custom image editor', {
   beforeEach() {
-    this.campaignPic = server.create("campaign-pic");
-    this.realLoadImage = this.uploadService.loadImage;
-    visit(defaultCampaignUrl + "/new");
+    this.realStoreAndLoadImage = Util.storeAndLoadImage;
+    Util.storeAndLoadImage = fakeStoreAndLoadImage;
+
+    const emailTemplate = server.create('email-template', "withHtml" );
+    this.campaignPic = server.create("campaign-pic", {email_template_ids: [emailTemplate.id]});
   },
   afterEach() {
+    Util.storeAndloadImage = this.realStoreAndLoadImage;
   }
 });
 
-test('upload populates editor', assert => {
+test('upload populates editor', function(assert) {
+  page.visitTypeEditor(this.campaignPic.id, 'custom-image');
+  click('.upload-custom-image .action-button');
   andThen(()=> {
+    assert.ok($('.email-template_design_edit_block'));
     assert.equal($('input[type=file]').length, 1);
   });
-  let event = Ember.$.Event('change', {
-    target: {
-      files: [{
-        name: "hello", type: "jpg"
-      }]
-    }
+  let event = fileEvent();
+
+  andThen(function() {
+    $('input[type=file]').trigger(event);
   });
-  $('input[type=file]').trigger(event);
-  andThen(() => {
-      assert.equal(currentURL(), defaultCampaignUrl);;
+
+  andThen(function() {
+    assert.equal($('.custom-image-image-width-field').val(), "100");
+    assert.equal($('.custom-image-image-height-field').val(), "100");
   });
 });
 
