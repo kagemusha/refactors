@@ -6,6 +6,15 @@ import { bind } from 'ember-runloop';
 const { get, set } = Ember;
 
 export default {
+  storeAndLoadImage(file) {
+    return this.s3Direct().then(({ url, credentials })=> {
+      return file.upload(url, {
+        data: credentials
+      });
+    }).then((response)=> {
+      return this.loadImage(response.headers.Location);
+    });
+  },
   loadImage (src, attributes={}) {
     if (isBlank(src)) { return null; }
 
@@ -30,5 +39,11 @@ export default {
 
     return promise;
   },
+
+  s3Direct() {
+    return new RSVP.Promise(function (resolve, reject) {
+      Ember.$.get('/api/canvas/email_templates/upload/cred').then(resolve, reject);
+    }, 'GET /api/canvas/email_templates/upload/cred');
+  }
 
 };
